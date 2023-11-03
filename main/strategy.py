@@ -1,10 +1,11 @@
 import pandas as pd
 from trade import Trade
 from data import CSVData
+import threading
 
 class MyCustomStrategy():
 
-    def __init__(self, data):
+    def __init__(self, data, sl_pips, rr):
 
         self.data = data
         self.data_size = len(data)
@@ -12,8 +13,8 @@ class MyCustomStrategy():
         self.SESSION_HIGH = 0
         self.SESSION_LOW = float('inf')
 
-        self.stop_loss_pips = 0.00002
-        self.reward_risk_ratio = 10
+        self.stop_loss_pips = sl_pips / (10**4)
+        self.reward_risk_ratio = rr
         self.take_profit_pips = self.stop_loss_pips * self.reward_risk_ratio
 
         self.session_long_taken = False
@@ -34,7 +35,10 @@ class MyCustomStrategy():
                 # first close all trades of the previous sessions
                 for trade in self.running_trades:
                     self.closed_trades.add(trade)
-                    self.running_trades.remove(trade)
+
+                for trade in self.closed_trades:
+                    if trade in self.running_trades:
+                        self.running_trades.remove(trade)
 
 
                 self.SESSION_HIGH = max(self.SESSION_HIGH, candlestick["high"])
@@ -113,19 +117,19 @@ class MyCustomStrategy():
         print(f"Winning Trades: {winning_trades}")
         print(f"Losing Trades: {losing_trades}")
         print(f"Win Rate: {win_rate:.2f}%")
-        print(f"Delta Pips: {self.delta_pips:.6f}")
+        print(f"Delta Pips: {self.delta_pips:.1f}")
 
 
+def execute_strategy(data, sl_pips, rr):
+    print(f" < running strategy with SL - {sl_pips} pips and RR - {rr} >")
+    my_strategy = MyCustomStrategy(data, sl_pips, rr)
+    my_strategy.run_strategy()
 
-data = CSVData("eurusd", 2022, "all").load()
-print(len(data))
+if __name__=="__main__":
+    threads = []
+    data = CSVData("eurusd", 2022, "all").load()
 
-my_strategy = MyCustomStrategy(data)
+    for sl_pips in range(2, 16):  # Values from 2 to 15 for the second argument
+        for rr in range(1, 11):  # Values from 1 to 10 for the third argument
+            execute_strategy(data, sl_pips, rr)
 
-my_strategy.run_strategy()
-
-
-# data.columns = ['Open', 'High', 'Low', 'Close']
-# # print(data)
-# bt = Backtest(data, MyStrategy)
-# stats = bt.run()
