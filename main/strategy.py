@@ -53,14 +53,14 @@ class MyCustomStrategy():
                         trade = Trade(self.SESSION_HIGH, "short") # take the short for the session
                         self.running_trades.add(trade)
                         self.session_short_taken = True
-                        # print(f'short -> {date_time}')
+                        print(f'short -> {date_time}')
 
                 if not self.session_long_taken: # if we have not already taken the long for the session
                     if candlestick['low'] < self.SESSION_LOW: # and we go below the session's low
                         trade = Trade(self.SESSION_LOW, "long") # take the logn for the session
                         self.running_trades.add(trade)
                         self.session_long_taken = True
-                        # print(f'long -> {date_time}')
+                        print(f'long -> {date_time}')
 
             self.validate_running_trades(candlestick['high'], candlestick['low'])
 
@@ -129,7 +129,10 @@ if __name__=="__main__":
     threads = []
     data = CSVData("eurusd", 2022, "all").load()
 
-    for sl_pips in range(2, 16):  # Values from 2 to 15 for the second argument
-        for rr in range(1, 11):  # Values from 1 to 10 for the third argument
-            execute_strategy(data, sl_pips, rr)
+    execute_strategy(data, 6, 5)
+
+    # DUREAZA MULT DACA DAI DRUMUL LA CODUL DE MAI JOS!!!!!!
+    # for sl_pips in range(2, 16):  # Values from 2 to 15 for the second argument
+    #     for rr in range(1, 11):  # Values from 1 to 10 for the third argument
+    #         execute_strategy(data, sl_pips, rr)
 
